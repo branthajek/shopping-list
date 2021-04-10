@@ -2,27 +2,31 @@ import { Injectable } from '@angular/core';
 import { Recipe } from './recipes.model';
 import { Ingredient } from '../shared/ingredient.model';
 import { ShoppingListService } from '../shopping-list/shopping-list.service';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RecipeService {
-  private recipes: Recipe[] = [
-    new Recipe(
-      'Vegan Tacos 1',
-      'All vegan recipe for homemade tacos.',
-      'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/1472483520-springtacos-1572537127.jpg?crop=1.00xw:0.672xh;0,0.156xh&resize=640:*',
-      [new Ingredient('Tortillas', 4), new Ingredient('soy curls', 1)]
-    ),
-    new Recipe(
-      'Vegan Tacos 2',
-      'Also vegan tacos.',
-      'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/1472483520-springtacos-1572537127.jpg?crop=1.00xw:0.672xh;0,0.156xh&resize=640:*',
-      [new Ingredient('Bell Pepper', 1), new Ingredient('Onion', 1)]
-    )
-  ];
+  recipesChanged = new Subject<Recipe[]>();
+
+  private recipes: Recipe[] = [];
+
+  // private recipes: Recipe[] = [
+  //   new Recipe(
+  //         'Recipe List',
+  //         'Add, remove, edit and save recipes along with their ingredients for your shopping list.',
+  //         'https://previews.123rf.com/images/pixelbliss/pixelbliss1110/pixelbliss111000074/11026838-recipe-book-and-ingredients.jpg',
+  //         [new Ingredient('Ingredient', 4), new Ingredient('Other Ingredient', 1)]
+  //       )
+  // ];
 
   constructor(private shoppingListService: ShoppingListService) {}
+
+  setRecipes(recipes: Recipe[]) {
+    this.recipes = recipes;
+    this.recipesChanged.next(this.recipes.slice());
+  }
 
   getRecipes() {
     return this.recipes.slice();
@@ -34,5 +38,20 @@ export class RecipeService {
 
   addIngredientsToShoppingList(ingredients: Ingredient[]) {
     this.shoppingListService.addIngredients(ingredients);
+  }
+
+  addRecipe(recipe: Recipe) {
+    this.recipes.push(recipe);
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  updateRecipe(index: number, newRecipe: Recipe) {
+    this.recipes[index] = newRecipe;
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  deleteRecipe(index: number) {
+    this.recipes.splice(index, 1);
+    this.recipesChanged.next(this.recipes.slice());
   }
 }
